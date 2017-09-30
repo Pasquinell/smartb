@@ -244,45 +244,74 @@ def add_article():
 	return render_template('add_article.html', form = form)
 
 
+# Edit Article 
+@app.route('/edit_article/<string:id>', methods = ['GET','POST'])
+@is_logged_in
+def edit_article(id):
+
+	# Create cursor
+	cur = mysql.connection.cursor()
+
+	# Get Article by Id
+	result = cur.execute(" SELECT * FROM products WHERE  id = %s", [id])
+
+	# Fetch
+	article = cur.fetchone()
+
+	# Get Form
+	form = ArticleForm(request.form)
+
+	# Populate ArticleForm Fields
+	form.article_name.data = article['article_name']
+	form.description.data = article['description']
+	form.valoration.data = article['valoration']
 
 
-""" PIP LIBRARIES INSTALLED
-flask
-pip install flask-mysqldb 
-Flask-WTF (FORM VALIDATION)
-passlib (help with passwords)
-"""
+
+
+	if request.method == 'POST' and form.validate():
+		article_name = request.form['article_name']
+		description = request.form['description']
+		valoration = request.form['valoration']
+
+		# Create cursor
+		cur = mysql.connection.cursor()
+
+		# Execute
+		cur.execute("UPDATE products SET article_name = %s, description = %s, valoration = %s WHERE id = %s",
+		[article_name, description,valoration, id] )
+
+		# Commit changes
+		mysql.connection.commit()
+
+		# Close Connection
+		cur.close()
+
+		flash('Article Updated','success')
+
+		return redirect(url_for('dashboard'))
+
+	return render_template('edit_article.html', form = form)
+
+@app.route('/delete_article/<string:id>', methods = ['POST'])
+@is_logged_in
+def delete_article(id):
+	# Create cursor
+	cur = mysql.connection.cursor()
+
+	# Delete Article by Id
+	result = cur.execute(" DELETE FROM products WHERE  id = %s", [id])
+
+	# Commit changes
+	mysql.connection.commit()
+
+	# Close Connection
+	cur.close()
+
+	flash('Article Deleted','success')
+
+	return redirect(url_for('dashboard'))
 
 
 
 
-"""
-def connect_db():
-	return sqlite3.connect("library.db")
-	#return sqlite3.connect("/Users/pasquinell/Code/backend-projects/flask-first/flask-first/library.db")
-"""
-"""@app.route('/')
-def home():
-	db_connection = connect_db()
-	cursor = db_connection.execute('SELECT id, name FROM author;')
-	authors = [dict(id =  row[0],name = row[1]) for row in cursor.fetchall()]
-	print(authors)
-	return render_template('templates/home.html', authors = authors)
-"""
-
-
-"""
-@app.route('/author/<string:authors_last_name>')
-def author(authors_last_name):
-	if authors_last_name not in AUTHORS_INFO:
-		abort(404)
-	return render_template('routing/author.html',
-							author = AUTHORS_INFO[authors_last_name])
-
-@app.route('/author/<string:authors_last_name>/edit')
-def author_admin(authors_last_name):
-	abort(401) # administration permsions
-
-@app.errorhandler(404)
-def not_found(error):
-	return render_template('routing/404.html'),404"""
