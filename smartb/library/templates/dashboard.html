@@ -27,7 +27,13 @@
 			<td> {{article.register_date}} </td>
 			<td> {{article.valoration}} </td>
 			<td> <a href = 'edit_article/{{article.id}}' class = 'btn btn-primary pull-right'> Edit </a></td>
-			<td> <a href = '#' class = 'btn btn-danger pull-right'> Delete </a></td>
+			<td> 
+				<form action = "{{ url_for('delete_article', id = article.id) }}" method = "post"> 
+					<input type = "hidden" name = "method" value = "DELETE">
+					<input type = "submit" value = "Delete" class = "btn btn-danger">
+
+				</form>
+			</td>
 		</tr>
 		{% endfor %}
 	</table>
